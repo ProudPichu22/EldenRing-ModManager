@@ -62,7 +62,7 @@ def build_file_list(folder):
 def open_file_manager(path):
     path = Path(path).expanduser().resolve()
 
-    if not path.is_dir():
+    if not path.exists():
         return False
 
     system = platform.system()

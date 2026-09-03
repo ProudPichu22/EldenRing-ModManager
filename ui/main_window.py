@@ -1,7 +1,4 @@
 from pathlib import Path
-import os
-import platform
-import subprocess
 
 from PySide6.QtWidgets import (
     QWidget,
@@ -20,7 +17,7 @@ from PySide6.QtGui import QDesktopServices
 from core.settings import Settings
 from core.profiles import ProfileManager
 from ui.create_profile import CreateProfileDialog
-from utils.filesystem import is_valid_elden_ring_folder
+from utils.filesystem import is_valid_elden_ring_folder, open_file_manager
 from ui.progress_dialog import ProgressDialog
 from core.worker import SyncWorker
 from core.updater import UpdateWorker
@@ -447,14 +444,7 @@ class MainWindow(QWidget):
 
     def open_settings(self):
         self.settings.save()
-        settings_path = self.settings.SETTINGS_FILE
-
-        if platform.system() == "Windows":
-            os.startfile(settings_path)
-        elif platform.system() == "Darwin":
-            subprocess.run(["open", settings_path])
-        else:
-            subprocess.run(["xdg-open", settings_path])
+        open_file_manager(self.settings.SETTINGS_FILE)
     
     def update_delete_button(self):
 
