@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout
 )
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, Qt
 
 
 from core.settings import Settings
@@ -75,7 +75,6 @@ class MainWindow(QWidget):
         right.addWidget(self.settings_button)
         right = QVBoxLayout()
 
-        right.addWidget(self.choose_game_button)
         right.addWidget(self.launch_button)
         right.addWidget(self.open_button)
         right.addWidget(self.refresh_manifest_button)
@@ -88,6 +87,10 @@ class MainWindow(QWidget):
         right.addStretch()
 
         right.addWidget(self.settings_button)
+        right.addWidget(
+            self.choose_game_button,
+            alignment=Qt.AlignmentFlag.AlignRight
+        )
 
         layout = QHBoxLayout()
         layout.addLayout(left, 3)
@@ -112,10 +115,20 @@ class MainWindow(QWidget):
 
         valid = bool(self.settings.game_directory)
 
-        self.launch_button.setEnabled(valid)
-        self.create_button.setEnabled(valid)
-        self.open_button.setEnabled(valid)
-        self.refresh_manifest_button.setEnabled(valid)
+        action_buttons = (
+            self.launch_button,
+            self.open_button,
+            self.refresh_manifest_button,
+            self.create_button,
+            self.delete_button,
+            self.settings_button
+        )
+
+        for button in action_buttons:
+            button.setVisible(valid)
+            button.setEnabled(valid)
+
+        self.choose_game_button.setVisible(not valid)
 
     def refresh_profiles(self):
 
