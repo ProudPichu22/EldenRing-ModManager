@@ -175,7 +175,7 @@ class MainWindow(QWidget):
         result = QMessageBox.question(
             self,
             "Update Available",
-            f"Version {version} is available. Would you like to download it?",
+            f"A new version is available. Would you like to download it?",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.Yes
         )
