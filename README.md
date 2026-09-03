@@ -38,3 +38,16 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
+
+## Build
+
+Install PyInstaller and build a windowed executable for the current platform:
+
+```bash
+python -m pip install pyinstaller
+pyinstaller --noconfirm --clean --windowed --name EldenRing-ModManager main.py
+```
+
+The executable is created in `dist/EldenRing-ModManager`. GitHub Actions builds
+Linux and Windows artifacts when a `v*` tag is pushed or when the workflow is
+started manually.
