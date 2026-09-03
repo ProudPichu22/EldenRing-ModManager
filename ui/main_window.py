@@ -175,7 +175,7 @@ class MainWindow(QWidget):
             self,
             "Update Downloaded",
             f"A new update was downloaded to:\n\n{update_path}\n\n"
-            f"Version: {version[:7]}"
+            f"Version: {version}"
         )
 
     def update_failed(self, error):

@@ -1,5 +1,4 @@
 from pathlib import Path
-import json
 from urllib.request import Request, urlopen
 
 from PySide6.QtCore import QObject, Signal
@@ -10,8 +9,8 @@ REPOSITORY_ARCHIVE_URL = (
     "archive/refs/heads/main.zip"
 )
 REPOSITORY_VERSION_URL = (
-    "https://api.github.com/repos/ProudPichu22/EldenRing-ModManager/"
-    "commits/main"
+    "https://raw.githubusercontent.com/ProudPichu22/"
+    "EldenRing-ModManager/main/.version"
 )
 VERSION_FILE = Path(__file__).resolve().parent.parent / ".version"
 
@@ -19,7 +18,7 @@ VERSION_FILE = Path(__file__).resolve().parent.parent / ".version"
 class UpdateWorker(QObject):
 
     finished = Signal()
-    updated = Signal(str, str)
+    updated = Signal(int, str)
     error = Signal(str)
 
     def run(self):
@@ -30,7 +29,7 @@ class UpdateWorker(QObject):
 
             if local_version is None:
                 save_local_version(remote_version)
-            elif local_version != remote_version:
+            elif remote_version > local_version:
                 update_path = download_latest_update()
                 save_local_version(remote_version)
                 self.updated.emit(remote_version, str(update_path))
@@ -45,16 +44,13 @@ def get_remote_version():
 
     request = Request(
         REPOSITORY_VERSION_URL,
-        headers={
-            "Accept": "application/vnd.github+json",
-            "User-Agent": "EldenRing-ModManager"
-        }
+        headers={"User-Agent": "EldenRing-ModManager"}
     )
 
     with urlopen(request, timeout=10) as response:
-        data = json.loads(response.read())
+        version = response.read().decode("utf-8").strip()
 
-    return data["sha"]
+    return int(version)
 
 
 def load_local_version():
@@ -63,7 +59,7 @@ def load_local_version():
         return None
 
     version = VERSION_FILE.read_text().strip()
-    return version or None
+    return int(version) if version else None
 
 
 def save_local_version(version):
