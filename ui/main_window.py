@@ -38,7 +38,7 @@ class MainWindow(QWidget):
 
         self.profile_list = QListWidget()
 
-        self.launch_button = QPushButton("Launch")
+        self.launch_button = QPushButton("Set Profile")
         self.open_button = QPushButton("Open Folder")
 
         self.create_button = QPushButton("Create")
