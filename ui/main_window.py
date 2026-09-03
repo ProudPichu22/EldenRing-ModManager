@@ -22,6 +22,7 @@ from ui.create_profile import CreateProfileDialog
 from utils.filesystem import is_valid_elden_ring_folder
 from ui.progress_dialog import ProgressDialog
 from core.worker import SyncWorker
+from core.updater import UpdateWorker
 
 class MainWindow(QWidget):
 
@@ -60,6 +61,8 @@ class MainWindow(QWidget):
         self.thread = None
         self.worker = None
         self.progress_dialog = None
+        self.update_thread = None
+        self.update_worker = None
 
         left = QVBoxLayout()
         left.addWidget(self.profile_list)
@@ -107,6 +110,7 @@ class MainWindow(QWidget):
         self.choose_game_button.clicked.connect(
             self.choose_game_folder
         )
+        self.check_for_updates()
     def update_game_label(self):
 
         self.game_label.setText(
@@ -129,6 +133,58 @@ class MainWindow(QWidget):
             button.setEnabled(valid)
 
         self.choose_game_button.setVisible(not valid)
+
+    def check_for_updates(self):
+
+        self.update_thread = QThread()
+        self.update_worker = UpdateWorker()
+        self.update_worker.moveToThread(self.update_thread)
+
+        self.update_thread.started.connect(
+            self.update_worker.run
+        )
+        self.update_worker.updated.connect(
+            self.update_completed
+        )
+        self.update_worker.error.connect(
+            self.update_failed
+        )
+        self.update_worker.finished.connect(
+            self.update_thread.quit
+        )
+        self.update_worker.finished.connect(
+            self.update_worker.deleteLater
+        )
+        self.update_thread.finished.connect(
+            self.update_thread.deleteLater
+        )
+        self.update_thread.finished.connect(
+            self.update_thread_finished
+        )
+
+        self.update_thread.start()
+
+    def update_thread_finished(self):
+
+        self.update_worker = None
+        self.update_thread = None
+
+    def update_completed(self, version, update_path):
+
+        QMessageBox.information(
+            self,
+            "Update Downloaded",
+            f"A new update was downloaded to:\n\n{update_path}\n\n"
+            f"Version: {version[:7]}"
+        )
+
+    def update_failed(self, error):
+
+        QMessageBox.warning(
+            self,
+            "Update Check Failed",
+            f"The latest update could not be checked:\n\n{error}"
+        )
 
     def refresh_profiles(self):
 
