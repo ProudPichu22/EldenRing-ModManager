@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 import subprocess
 import platform
+import shutil
 
 from pathlib import Path
 import hashlib
@@ -59,15 +60,44 @@ def build_file_list(folder):
     )
 
 def open_file_manager(path):
-    path = str(path)
+    path = Path(path).expanduser().resolve()
+
+    if not path.is_dir():
+        return False
 
     system = platform.system()
 
     if system == "Windows":
-        os.startfile(path)
+        os.startfile(str(path))
 
     elif system == "Linux":
-        subprocess.run(["xdg-open", path])
+        opener = shutil.which("xdg-open") or shutil.which("gio")
+
+        if opener is None:
+            return False
+
+        environment = os.environ.copy()
+        for variable in (
+            "LD_LIBRARY_PATH",
+            "LD_LIBRARY_PATH_ORIG",
+            "QT_PLUGIN_PATH",
+            "QML2_IMPORT_PATH"
+        ):
+            environment.pop(variable, None)
+
+        subprocess.Popen(
+            [opener, str(path)],
+            start_new_session=True,
+            env=environment
+        )
 
     elif system == "Darwin":
-        subprocess.run(["open", path])
+        subprocess.Popen(
+            ["open", str(path)],
+            start_new_session=True
+        )
+
+    else:
+        return False
+
+    return True
