@@ -1,7 +1,4 @@
 import shutil
-import os
-import subprocess
-import platform
 from pathlib import Path
 from utils.filesystem import open_file_manager
 from core.manifest import Manifest

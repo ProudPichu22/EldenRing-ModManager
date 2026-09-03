@@ -1,4 +1,7 @@
 from pathlib import Path
+import os
+import platform
+import subprocess
 
 from PySide6.QtWidgets import (
     QWidget,
@@ -10,8 +13,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout
 )
-from PySide6.QtCore import QThread, QUrl
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtCore import QThread
 
 
 from core.settings import Settings
@@ -362,10 +364,6 @@ class MainWindow(QWidget):
 
         self.settings.active_profile = profile
         self.settings.save()
-
-        QDesktopServices.openUrl(
-            QUrl("steam://rungameid/1245620")
-        )
 
 
     def open_settings(self):
