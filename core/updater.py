@@ -1,6 +1,8 @@
 from pathlib import Path
+import ssl
 from urllib.request import Request, urlopen
 
+import certifi
 from PySide6.QtCore import QObject, Signal
 
 
@@ -13,6 +15,7 @@ REPOSITORY_VERSION_URL = (
     "EldenRing-ModManager/main/.version"
 )
 VERSION_FILE = Path(__file__).resolve().parent.parent / ".version"
+SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
 
 
 class UpdateWorker(QObject):
@@ -47,7 +50,7 @@ def get_remote_version():
         headers={"User-Agent": "EldenRing-ModManager"}
     )
 
-    with urlopen(request, timeout=10) as response:
+    with urlopen(request, timeout=10, context=SSL_CONTEXT) as response:
         version = response.read().decode("utf-8").strip()
 
     return int(version)
@@ -81,7 +84,7 @@ def download_latest_update(destination=None):
         headers={"User-Agent": "EldenRing-ModManager"}
     )
 
-    with urlopen(request, timeout=30) as response:
+    with urlopen(request, timeout=30, context=SSL_CONTEXT) as response:
         with destination.open("wb") as archive:
             while chunk := response.read(1024 * 1024):
                 archive.write(chunk)
