@@ -13,7 +13,8 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout
 )
-from PySide6.QtCore import QThread, Qt
+from PySide6.QtCore import QThread, Qt, QUrl
+from PySide6.QtGui import QDesktopServices
 
 
 from core.settings import Settings
@@ -143,8 +144,8 @@ class MainWindow(QWidget):
         self.update_thread.started.connect(
             self.update_worker.run
         )
-        self.update_worker.updated.connect(
-            self.update_completed
+        self.update_worker.update_available.connect(
+            self.update_available
         )
         self.update_worker.error.connect(
             self.update_failed
@@ -169,14 +170,23 @@ class MainWindow(QWidget):
         self.update_worker = None
         self.update_thread = None
 
-    def update_completed(self, version, update_path):
+    def update_available(self, version):
 
-        QMessageBox.information(
+        result = QMessageBox.question(
             self,
-            "Update Downloaded",
-            f"A new update was downloaded to:\n\n{update_path}\n\n"
-            f"Version: {version}"
+            "Update Available",
+            f"Version {version} is available. Would you like to download it?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes
         )
+
+        if result == QMessageBox.Yes:
+            QDesktopServices.openUrl(
+                QUrl(
+                    "https://github.com/ProudPichu22/"
+                    "EldenRing-ModManager/releases/latest"
+                )
+            )
 
     def update_failed(self, error):
 

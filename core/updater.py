@@ -6,10 +6,6 @@ import certifi
 from PySide6.QtCore import QObject, Signal
 
 
-REPOSITORY_ARCHIVE_URL = (
-    "https://github.com/ProudPichu22/EldenRing-ModManager/"
-    "archive/refs/heads/main.zip"
-)
 REPOSITORY_VERSION_URL = (
     "https://raw.githubusercontent.com/ProudPichu22/"
     "EldenRing-ModManager/main/.version"
@@ -21,7 +17,7 @@ SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
 class UpdateWorker(QObject):
 
     finished = Signal()
-    updated = Signal(int, str)
+    update_available = Signal(int)
     error = Signal(str)
 
     def run(self):
@@ -33,9 +29,7 @@ class UpdateWorker(QObject):
             if local_version is None:
                 save_local_version(remote_version)
             elif remote_version > local_version:
-                update_path = download_latest_update()
-                save_local_version(remote_version)
-                self.updated.emit(remote_version, str(update_path))
+                self.update_available.emit(remote_version)
 
         except Exception as error:
             self.error.emit(str(error))
@@ -68,25 +62,3 @@ def load_local_version():
 def save_local_version(version):
 
     VERSION_FILE.write_text(f"{version}\n")
-
-
-def download_latest_update(destination=None):
-
-    if destination is None:
-        destination = Path.home() / "Downloads" / "EldenRing-ModManager-latest.zip"
-    else:
-        destination = Path(destination)
-
-    destination.parent.mkdir(parents=True, exist_ok=True)
-
-    request = Request(
-        REPOSITORY_ARCHIVE_URL,
-        headers={"User-Agent": "EldenRing-ModManager"}
-    )
-
-    with urlopen(request, timeout=30, context=SSL_CONTEXT) as response:
-        with destination.open("wb") as archive:
-            while chunk := response.read(1024 * 1024):
-                archive.write(chunk)
-
-    return destination
