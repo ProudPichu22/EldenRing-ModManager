@@ -8,7 +8,7 @@ class Settings:
 
     def __init__(self):
 
-        self.game_directory = "C:/Program Files (x86)/Steam/steamapps/common/ELDEN RING/"
+        self.game_directory = ""
         self.active_profile = ""
 
         self.load()
