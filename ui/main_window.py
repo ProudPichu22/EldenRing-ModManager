@@ -234,7 +234,7 @@ class MainWindow(QWidget):
 
         profile = self.current_profile()
 
-        if not profile:
+        if not profile or profile == "Base Game":
             return
 
         self.profile_manager.update_profile_manifest(profile)
@@ -385,5 +385,9 @@ class MainWindow(QWidget):
 
         if profile == "Base Game":
             self.delete_button.setEnabled(False)
+            self.refresh_manifest_button.setEnabled(False)
         else:
             self.delete_button.setEnabled(True)
+            self.refresh_manifest_button.setEnabled(
+                bool(profile) and bool(self.settings.game_directory)
+            )
