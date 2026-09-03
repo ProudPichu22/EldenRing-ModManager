@@ -331,7 +331,7 @@ class MainWindow(QWidget):
         print("Sync error:", error)
 
         if self.progress_dialog:
-            self.progress_dialog.close()
+            self.progress_dialog.close_when_finished()
 
         QMessageBox.critical(
             self,
@@ -343,7 +343,7 @@ class MainWindow(QWidget):
 
         print("Sync finished")
 
-        self.progress_dialog.close()
+        self.progress_dialog.close_when_finished()
 
         profile = self.current_profile()
 
