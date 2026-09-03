@@ -5,7 +5,6 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
-    QFileDialog,
     QMessageBox
 )
 
@@ -21,15 +20,6 @@ class CreateProfileDialog(QDialog):
         self.profile_name = QLineEdit()
         self.profile_name.setPlaceholderText(
             "Profile Name"
-        )
-
-        self.executable = QLineEdit()
-        self.executable.setPlaceholderText(
-            "Launch executable (optional)"
-        )
-
-        self.browse_button = QPushButton(
-            "Browse..."
         )
 
         self.create_button = QPushButton(
@@ -52,18 +42,6 @@ class CreateProfileDialog(QDialog):
         )
 
 
-        exe_layout = QHBoxLayout()
-        exe_layout.addWidget(
-            QLabel("Executable:")
-        )
-        exe_layout.addWidget(
-            self.executable
-        )
-        exe_layout.addWidget(
-            self.browse_button
-        )
-
-
         button_layout = QHBoxLayout()
         button_layout.addStretch()
         button_layout.addWidget(
@@ -77,13 +55,7 @@ class CreateProfileDialog(QDialog):
         layout = QVBoxLayout(self)
 
         layout.addLayout(name_layout)
-        layout.addLayout(exe_layout)
         layout.addLayout(button_layout)
-
-
-        self.browse_button.clicked.connect(
-            self.select_executable
-        )
 
         self.create_button.clicked.connect(
             self.validate
@@ -92,19 +64,6 @@ class CreateProfileDialog(QDialog):
         self.cancel_button.clicked.connect(
             self.reject
         )
-
-
-    def select_executable(self):
-
-        file, _ = QFileDialog.getOpenFileName(
-            self,
-            "Select Launch Executable",
-            "",
-            "Executables (*.exe *.bat *.sh);;All Files (*)"
-        )
-
-        if file:
-            self.executable.setText(file)
 
 
     def validate(self):
@@ -125,6 +84,5 @@ class CreateProfileDialog(QDialog):
     def get_data(self):
 
         return {
-            "name": self.profile_name.text().strip(),
-            "executable": self.executable.text().strip()
+            "name": self.profile_name.text().strip()
         }

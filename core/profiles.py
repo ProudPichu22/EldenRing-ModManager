@@ -5,8 +5,8 @@ import platform
 from pathlib import Path
 from utils.filesystem import open_file_manager
 from core.manifest import Manifest
+from core.sync import SyncEngine
 from utils.filesystem import build_file_list
-import json
 
 class ProfileManager:
 
@@ -39,7 +39,7 @@ class ProfileManager:
             if f.is_dir()
         )
 
-    def create_profile(self, name, executable=""):
+    def create_profile(self, name):
 
         profile = self.profiles_folder / name
 
@@ -55,8 +55,6 @@ class ProfileManager:
         manifest = Manifest(profile)
 
         manifest.data["name"] = name
-        manifest.data["launchType"] = "executable"
-        manifest.data["launchTarget"] = executable
 
         manifest.save()
 
@@ -75,10 +73,10 @@ class ProfileManager:
 
         profile = self.profiles_folder / name
 
-        manifest = Manifest(profile)
-
-        manifest.load()
-        manifest.update()
+        engine = SyncEngine(
+            Path(self.settings.game_directory) / "Game"
+        )
+        engine.update_manifest(profile)
     
     def initialize_profiles(self):
 
@@ -115,8 +113,6 @@ class ProfileManager:
         manifest = Manifest(base_profile)
 
         manifest.data["name"] = "Base Game"
-        manifest.data["launchType"] = "steam"
-        manifest.data["launchTarget"] = "1245620"
 
 
         # Scan the current game installation
@@ -132,16 +128,3 @@ class ProfileManager:
 
 
         manifest.save()
-        
-    def get_manifest(self, profile):
-
-        manifest = (
-            Path(profile) /
-            "manifest.json"
-        )
-
-        if not manifest.exists():
-            return {}
-
-        with open(manifest, "r") as f:
-            return json.load(f)

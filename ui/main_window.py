@@ -1,7 +1,4 @@
 from pathlib import Path
-import os
-import subprocess
-import platform
 
 from PySide6.QtWidgets import (
     QWidget,
@@ -10,18 +7,17 @@ from PySide6.QtWidgets import (
     QLabel,
     QFileDialog,
     QMessageBox,
-    QInputDialog,
     QHBoxLayout,
     QVBoxLayout
 )
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, QUrl
+from PySide6.QtGui import QDesktopServices
 
 
 from core.settings import Settings
 from core.profiles import ProfileManager
 from ui.create_profile import CreateProfileDialog
 from utils.filesystem import is_valid_elden_ring_folder
-from core.manager import ModManager
 from ui.progress_dialog import ProgressDialog
 from core.worker import SyncWorker
 
@@ -40,6 +36,7 @@ class MainWindow(QWidget):
 
         self.launch_button = QPushButton("Set Profile")
         self.open_button = QPushButton("Open Folder")
+        self.refresh_manifest_button = QPushButton("Refresh Manifest")
 
         self.create_button = QPushButton("Create")
         self.delete_button = QPushButton("Delete")
@@ -52,6 +49,9 @@ class MainWindow(QWidget):
 
         self.launch_button.clicked.connect(self.launch_profile)
         self.open_button.clicked.connect(self.open_folder)
+        self.refresh_manifest_button.clicked.connect(
+            self.refresh_manifest
+        )
         self.create_button.clicked.connect(self.create_profile)
         self.delete_button.clicked.connect(self.delete_profile)
         self.settings_button.clicked.connect(self.open_settings)
@@ -65,6 +65,7 @@ class MainWindow(QWidget):
         right = QVBoxLayout()
         right.addWidget(self.launch_button)
         right.addWidget(self.open_button)
+        right.addWidget(self.refresh_manifest_button)
         right.addSpacing(20)
         right.addWidget(self.create_button)
         right.addWidget(self.delete_button)
@@ -75,6 +76,7 @@ class MainWindow(QWidget):
         right.addWidget(self.choose_game_button)
         right.addWidget(self.launch_button)
         right.addWidget(self.open_button)
+        right.addWidget(self.refresh_manifest_button)
 
         right.addSpacing(20)
 
@@ -100,10 +102,6 @@ class MainWindow(QWidget):
         self.choose_game_button.clicked.connect(
             self.choose_game_folder
         )
-        self.mod_manager = ModManager(
-            self.settings
-        )
-
     def update_game_label(self):
 
         self.game_label.setText(
@@ -115,6 +113,7 @@ class MainWindow(QWidget):
         self.launch_button.setEnabled(valid)
         self.create_button.setEnabled(valid)
         self.open_button.setEnabled(valid)
+        self.refresh_manifest_button.setEnabled(valid)
 
     def refresh_profiles(self):
 
@@ -191,8 +190,7 @@ class MainWindow(QWidget):
 
 
             self.profile_manager.create_profile(
-                name,
-                data["executable"]
+                name
             )
 
             self.refresh_profiles()
@@ -231,6 +229,21 @@ class MainWindow(QWidget):
 
         if profile:
             self.profile_manager.open_profile(profile)
+
+    def refresh_manifest(self):
+
+        profile = self.current_profile()
+
+        if not profile:
+            return
+
+        self.profile_manager.update_profile_manifest(profile)
+
+        QMessageBox.information(
+            self,
+            "Manifest Refreshed",
+            f"The manifest for '{profile}' has been updated."
+        )
 
     def launch_profile(self):
 
@@ -350,46 +363,10 @@ class MainWindow(QWidget):
         self.settings.active_profile = profile
         self.settings.save()
 
-
-        self.launch_executable(
-            profile
+        QDesktopServices.openUrl(
+            QUrl("steam://rungameid/1245620")
         )
 
-    def launch_executable(self, profile):
-
-        manifest = self.profile_manager.get_manifest(profile)
-
-        launch_type = manifest.get(
-            "launchType"
-        )
-
-        target = manifest.get(
-            "launchTarget"
-        )
-
-
-        if launch_type == "steam":
-
-            url = f"steam://rungameid/{target}"
-
-            if platform.system() == "Windows":
-                os.startfile(url)
-            else:
-                subprocess.Popen(
-                    ["xdg-open", url]
-                )
-
-
-        elif launch_type == "executable":
-
-            executable = (
-                Path(profile) /
-                target
-            )
-
-            subprocess.Popen(
-                [str(executable)]
-            )
 
     def open_settings(self):
         self.settings.save()
