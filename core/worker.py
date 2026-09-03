@@ -35,33 +35,19 @@ class SyncWorker(QObject):
         print("Old profile:", self.old_profile)
         print("New profile:", self.new_profile)
         
-        if self.new_profile.name != "Base Game":
-            self.engine.update_manifest(
-                self.new_profile
-            )
-
         try:
 
             operations = []
 
-            if self.old_profile:
+            print("Restoring base game files")
+            operations += self.engine.get_remove_operations(
+                self.profiles_folder / "Base Game"
+            )
 
-                print("Generating delete list")
-                if self.old_profile.name != "Base Game":
-                    self.engine.update_manifest(
-                        self.old_profile
-                    )
-
-                remove_ops = self.engine.get_remove_operations(
-                    self.old_profile
+            if self.new_profile.name != "Base Game":
+                self.engine.update_manifest(
+                    self.new_profile
                 )
-
-
-                operations += remove_ops
-
-            else:
-
-                print("No old profile set")
 
             if self.new_profile.name == "Base Game":
                 copy_operations = []

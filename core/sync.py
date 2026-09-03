@@ -51,13 +51,25 @@ class SyncEngine:
         if not manifest_path.exists():
             return []
 
-        if Path(profile).name == "Base Game":
-            return []
-
         with open(manifest_path, "r") as f:
             manifest = json.load(f)
 
         operations = []
+
+        if Path(profile).name == "Base Game":
+            base_files = {
+                Path(file["path"])
+                for file in manifest.get("files", [])
+            }
+
+            for file in self.game_folder.rglob("*"):
+                if file.is_file():
+                    relative_path = file.relative_to(self.game_folder)
+
+                    if relative_path not in base_files:
+                        operations.append(("delete", relative_path))
+
+            return operations
 
         for file in manifest.get("files", []):
 
@@ -137,17 +149,9 @@ class SyncEngine:
 
 
         if is_base_game:
-
             files_folder = self.game_folder
-
         else:
-
-            files_folder = (
-                profile /
-                "files"
-            )
-
-        files_folder = profile / "files"
+            files_folder = profile / "files"
         manifest_file = profile / "manifest.json"
 
         file_list = []
